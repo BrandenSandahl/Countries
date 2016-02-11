@@ -1,3 +1,6 @@
+import jodd.json.JsonParser;
+import jodd.json.JsonSerializer;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -34,7 +37,9 @@ public class Countries {
         }
 
         String fileName = userChoice + "_Countries.txt";
+        String fileNameJson = userChoice + "_Countries.json";
         writeFile(fileName, output);
+        writeToJson(fileNameJson, countryMap.get(userChoice));
 
 
     }
@@ -44,13 +49,13 @@ public class Countries {
     public static void readFileToHashMap() throws FileNotFoundException {
         File f = new File("countries.txt");
         Scanner fileScanner = new Scanner(f);  //try catch here?
-        //ok so i'm just reading everything into a list called allCountries. this is prob an extra step
-        while (fileScanner.hasNext()) {
-            String[] lineIn = fileScanner.nextLine().split("\\|");
-            Country tempCountry = new Country(lineIn[0], lineIn[1]);
-            Character firstLetter = lineIn[1].toUpperCase().charAt(0);
+        while (fileScanner.hasNext()) {  //going through the file line by line
+            String[] lineIn = fileScanner.nextLine().split("\\|");         //turning a line into string array on the |
+            Country tempCountry = new Country(lineIn[0], lineIn[1]);           //creating a temp object and loading it from the string
+            Character firstLetter = lineIn[1].toUpperCase().charAt(0);         //making my key
+
             if (!countryMap.keySet().contains(firstLetter)) { //if the key has not yet been created
-                countryMap.put(firstLetter, new ArrayList<Country>());  //create key and empty array
+                countryMap.put(firstLetter, new ArrayList<>());  //create key and empty array. //CAN I COMBINE THESE LINES?
                 countryMap.get(firstLetter).add(tempCountry); //go ahead and add in the country. I mean..why not?! Why not bro. Why not
             } else {
                 countryMap.get(firstLetter).add(tempCountry); //otherwise just pull up the key and add the object value to the array
@@ -66,5 +71,17 @@ public class Countries {
         FileWriter fw = new FileWriter(f);
         fw.write(fileContent);
         fw.close();
+    }
+
+
+    static void writeToJson(String filename, ArrayList<Country> fileContent) throws IOException {
+        File f = new File(filename);
+        FileWriter fw = new FileWriter(f);
+        JsonSerializer serializer = new JsonSerializer();
+
+        String output = serializer.include("*").serialize(fileContent);
+        fw.write(output);
+        fw.close();
+
     }
 }
