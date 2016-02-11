@@ -7,57 +7,59 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class Countries {
-    public static void main(String[] args) throws FileNotFoundException {
-        HashMap<String, ArrayList<Country>> countryMap = new HashMap<>();
+    static HashMap<Character, ArrayList<Country>> countryMap = new HashMap<>();
+    static Scanner scanner = new Scanner(System.in);
 
 
-        ArrayList<Country> allCountries =  new ArrayList<>();
+    public static void main(String[] args) throws IOException {
 
+        readFileToHashMap(); //read the source file into a HashMap
+        Character userChoice; //need to access this outside my loopy loop
+
+        //Give the user an option
+        while (true) {
+            System.out.println("Please choose the starting letter of the states you wish to display:");
+            System.out.println("IE, \"A\" or \"B\"");
+            userChoice = scanner.nextLine().toUpperCase().charAt(0);
+            if (userChoice.charValue() >= 65 && userChoice.charValue() <=90) //this is testing for A-Z
+                break;
+        }
+
+
+        ArrayList<Country> tempOutput = countryMap.get(userChoice);
+        String output = "";
+
+        for (Country c : tempOutput) {
+            output += c.getCountryShort() + " | " + c.getCountryName() + "\n";
+        }
+
+        String fileName = userChoice + "_Countries.txt";
+        writeFile(fileName, output);
+
+
+    }
+
+
+
+    public static void readFileToHashMap() throws FileNotFoundException {
         File f = new File("countries.txt");
         Scanner fileScanner = new Scanner(f);  //try catch here?
-
         //ok so i'm just reading everything into a list called allCountries. this is prob an extra step
         while (fileScanner.hasNext()) {
             String[] lineIn = fileScanner.nextLine().split("\\|");
             Country tempCountry = new Country(lineIn[0], lineIn[1]);
-            allCountries.add(tempCountry);
+            Character firstLetter = lineIn[1].toUpperCase().charAt(0);
+            if (!countryMap.keySet().contains(firstLetter)) { //if the key has not yet been created
+                countryMap.put(firstLetter, new ArrayList<Country>());  //create key and empty array
+                countryMap.get(firstLetter).add(tempCountry); //go ahead and add in the country. I mean..why not?! Why not bro. Why not
+            } else {
+                countryMap.get(firstLetter).add(tempCountry); //otherwise just pull up the key and add the object value to the array
+            }
+
         }
-
-        //i need to make the structure of my HashMap
-        //lets make the keys and make a key only if there is a corresponding letter.
-        //technically this is sort of not needed because I'm prety sure there is a country from A-Z so...i dont really need to iterate over all this shit
-        for (Country c : allCountries) {
-            String first = c.getCountryName().substring(0,1);
-            countryMap.put(first, new ArrayList<Country>());
-        }
-
-        //if country starts with an A, I need to pop it into the "A" key. Etc.
-        for (Country c : allCountries) {
-            String first = c.getCountryName().substring(0,1);
-            countryMap.get(first).add(c);
-        }
-
-
-
-
-
-
-
     }
 
 
-
-
-
-
-    //reads in a single line of a file! Just one line!
-    static String readFile(String fileName) throws FileNotFoundException {
-        File f = new File(fileName);
-        Scanner fileScanner = new Scanner(f);
-
-        String lineIn = fileScanner.nextLine();
-        return lineIn;
-    }
 
     static void writeFile(String fileName, String fileContent) throws IOException {
         File f = new File(fileName);
